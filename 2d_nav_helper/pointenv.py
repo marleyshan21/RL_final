@@ -152,10 +152,4 @@ class PointEnv(gym.Env):
                 dist[i1, j1, i2, j2] = d
         return dist
     
-
-
-class GoalConditionedPointWrapper(gym.Wrapper):
-    """Wrapper that appends goal to observation produced by environment."""
-
-
     
