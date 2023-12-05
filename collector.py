@@ -12,6 +12,11 @@ class Collector:
         self.initial_collect_steps = initial_collect_steps
 
     def step(self, num_steps):
+
+        """
+        Method to collect data from the environment using the policy.
+        """
+
         for _ in range(num_steps):
             if self.steps < self.initial_collect_steps:
                 action = self.env.action_space.sample()
@@ -19,6 +24,8 @@ class Collector:
                 action = self.policy.select_action(self.state)
 
             next_state, reward, done, info = self.env.step(np.copy(action))
+
+            # Add the transition to the replay buffer and update the state
             if info.get('last_timestep', False):
                 self.buffer.add(self.state, action, info['terminal_observation'], reward, done)
                 self.state = next_state
@@ -30,6 +37,11 @@ class Collector:
 
     @classmethod
     def sample_initial_states(cls, eval_env, num_states):
+
+        """
+        Sample `num_states` initial states from the environment.
+        """
+
         rb_vec = []
         for _ in range(num_states):
             rb_vec.append(eval_env.reset())
@@ -81,6 +93,13 @@ class Collector:
 
     @classmethod
     def get_trajectory(cls, policy, eval_env):
+
+        """
+        Method to collect a trajectory from the environment using the policy.
+        
+        """
+
+
         ep_observation_list = []
         ep_waypoint_list = []
         ep_reward_list = []

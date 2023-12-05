@@ -38,6 +38,14 @@ def train_eval(
 
 
 def eval_pointenv_dists(agent, eval_env, num_evals=10, eval_distances=[2, 5, 10]):
+
+    """
+    This function evaluates the agent on the given environment.
+    We have certain known goal distances, and we evaluate the agent's
+    ability to predict these distances.
+    """
+
+
     for dist in eval_distances:
         eval_env.set_sample_goal_args(prob_constraint=1, min_dist=dist, max_dist=dist) # NOTE: samples goal distances in [min_dist, max_dist] closed interval
         returns = Collector.eval_agent(agent, eval_env, num_evals)
@@ -58,6 +66,13 @@ def eval_pointenv_dists(agent, eval_env, num_evals=10, eval_distances=[2, 5, 10]
 
 
 def eval_search_policy(search_policy, eval_env, num_evals=10):
+
+    """
+    Method to evaluate the search policy on the given environment.
+    Returns the success rate and the time taken for evaluation.
+    """
+
+
     eval_start = time.perf_counter()
 
     successes = 0.
@@ -72,48 +87,3 @@ def eval_search_policy(search_policy, eval_env, num_evals=10):
     eval_time = eval_end - eval_start
     success_rate = successes / num_evals
     return success_rate, eval_time
-
-
-def take_cleanup_steps(search_policy, eval_env, num_cleanup_steps):
-    set_env_difficulty(eval_env, 0.95)
-
-    search_policy.set_cleanup(True)
-    cleanup_start = time.perf_counter()
-    # Collector.eval_agent(search_policy, eval_env, num_cleanup_steps, by_episode=False) # random goals in env
-    Collector.step_cleanup(search_policy, eval_env, num_cleanup_steps) # samples goals from nodes in state graph
-    cleanup_end = time.perf_counter()
-    search_policy.set_cleanup(False)
-    cleanup_time = cleanup_end - cleanup_start
-    return cleanup_time
-
-
-def cleanup_and_eval_search_policy(search_policy, eval_env, num_evals=10, difficulty=0.5):
-    set_env_difficulty(eval_env, difficulty)
-    search_policy.reset_stats()
-    success_rate, eval_time = eval_search_policy(search_policy, eval_env, num_evals=num_evals)
-
-    # Initial sparse graph
-    print(f'Initial {search_policy} has success rate {success_rate:.2f}, evaluated in {eval_time:.2f} seconds')
-    initial_g, initial_rb = search_policy.g.copy(), search_policy.rb_vec.copy()
-
-    # Filter search policy
-    search_policy.filter_keep_k_nearest()
-
-    set_env_difficulty(eval_env, difficulty)
-    search_policy.reset_stats()
-    success_rate, eval_time = eval_search_policy(search_policy, eval_env, num_evals=num_evals)
-    print(f'Filtered {search_policy} has success rate {success_rate:.2f}, evaluated in {eval_time:.2f} seconds')
-    filtered_g, filtered_rb = search_policy.g.copy(), search_policy.rb_vec.copy()
-
-    # Cleanup steps
-    num_cleanup_steps = int(1e4)
-    cleanup_time = take_cleanup_steps(search_policy, eval_env, num_cleanup_steps)
-    print(f'Took {num_cleanup_steps} cleanup steps in {cleanup_time:.2f} seconds')
-
-    set_env_difficulty(eval_env, difficulty)
-    search_policy.reset_stats()
-    success_rate, eval_time = eval_search_policy(search_policy, eval_env, num_evals=num_evals)
-    print(f'Cleaned {search_policy} has success rate {success_rate:.2f}, evaluated in {eval_time:.2f} seconds')
-    cleaned_g, cleaned_rb = search_policy.g.copy(), search_policy.rb_vec.copy()
-
-    return (initial_g, initial_rb), (filtered_g, filtered_rb), (cleaned_g, cleaned_rb)
