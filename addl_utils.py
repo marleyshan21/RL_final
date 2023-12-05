@@ -51,7 +51,7 @@ def set_env_seed(env, seed):
     Helps to set the seed for the random number generator
     in the gym environment.
     """
-
+    print("env, seed", env, seed)
     env.seed(seed)
     env.action_space.seed(seed) 
     

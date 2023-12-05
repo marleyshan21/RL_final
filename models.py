@@ -64,7 +64,7 @@ class Critic(nn.Module):
         # input layer
         self.fc1 = nn.Linear(state_dim, hidden_dim)
         # hidden layers
-        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim + action_dim, hidden_dim)
         # output layer
         self.fc3 = nn.Linear(hidden_dim, output_dim)
 
