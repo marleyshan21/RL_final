@@ -1,6 +1,6 @@
 # set of different 2D navigation environments
 import numpy as np
-
+import matplotlib.pyplot as plt
 WALLS = {
     'Small':
         np.array([[0, 0, 0, 0],
@@ -222,16 +222,27 @@ WALLS = {
 
 
 
-def resize_walls(walls, factor):
-  """Increase the environment by rescaling.
+def plot_walls(walls):
+    walls = walls.T
+    (height, width) = walls.shape
+    for (i, j) in zip(*np.where(walls)):
+        x = np.array([j, j+1]) / float(width)
+        y0 = np.array([i, i]) / float(height)
+        y1 = np.array([i+1, i+1]) / float(height)
+        plt.fill_between(x, y0, y1, color='grey')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.xticks([])
+    plt.yticks([])
 
-  Args:
-    walls: 0/1 array indicating obstacle locations.
-    factor: (int) factor by which to rescale the environment."""
-  (height, width) = walls.shape
-  row_indices = np.array([i for i in range(height) for _ in range(factor)])
-  col_indices = np.array([i for i in range(width) for _ in range(factor)])
-  walls = walls[row_indices]
-  walls = walls[:, col_indices]
-  assert walls.shape == (factor * height, factor * width)
-  return walls
+
+if __name__ == "__main__":
+
+    plt.figure(figsize=(12, 7))
+    for index, (name, walls) in enumerate(WALLS.items()):
+        plt.subplot(3, 6, index + 1)
+        plt.title(name)
+        plot_walls(walls)
+    plt.subplots_adjust(wspace=0.1, hspace=0.2)
+    plt.suptitle('Navigation Environments', fontsize=20)
+    plt.show()

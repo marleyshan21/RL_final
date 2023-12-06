@@ -82,8 +82,7 @@ def train_eval(
     plt.plot(episode_returns, color='grey', label='episode returns')
     plt.plot(rolling_average(episode_returns, window_size=100), 'b', label='rolling average')
     plt.legend(loc='upper right')
-    print("env:" ,eval_env.env_name)
-    plt.savefig('./rewards/rewardsplot.png')
+    plt.savefig('./rewards/rewardsplot_' + eval_env.env_name + '_' + str(num_iterations) + '.png')
     plt.show()
 
 def eval_pointenv_dists(agent, eval_env, num_evals=10, eval_distances=[2, 5, 10]):
