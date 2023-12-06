@@ -1,12 +1,12 @@
 dict(
     seed=0,
     env=dict(
-        env_name='Cross', # Check the "Walls" in envs.py for other options
+        env_name='random', # Check the "Walls" in envs.py for other options
         max_episode_steps=20,
-        resize_factor=5, # Inflate the environment to increase the difficulty.
+        resize_factor=2, # Inflate the environment to increase the difficulty.
     ),
     runner=dict(
-        num_iterations=10000,
+        num_iterations=100000,
         initial_collect_steps=1000, # Number of steps to collect at the start of training
         collect_steps=2, # Number of steps to collect per iteration
         opt_steps=1, # Number of optimization steps per iteration

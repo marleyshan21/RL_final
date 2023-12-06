@@ -166,3 +166,27 @@ def visualize_compare_search(agent, search_policy, eval_env, difficulty=0.5, see
             plt.plot(waypoint_vec[:, 0], waypoint_vec[:, 1], 'y-s', alpha=0.3, label='waypoint')
             plt.legend(loc='lower left', bbox_to_anchor=(-0.8, -0.15), ncol=4, fontsize=16)
     plt.show()
+
+
+def plot_policy_outputs(observations, waypoints, goal, eval_env):
+    start = observations[0]
+
+    obs_vec = np.array(observations)
+    waypoint_vec = np.array(waypoints)
+
+    print(f'start: {start}')
+    print(f'goal: {goal}')
+    print(f'steps: {obs_vec.shape[0] - 1}')
+    print('-' * 10)
+    plot_walls(eval_env.walls)
+    plt.plot(obs_vec[:, 0], obs_vec[:, 1], 'b-o', alpha=0.3)
+    plt.scatter([start[0]], [start[1]], marker='+',
+                color='red', s=200, label='start')
+    plt.scatter([obs_vec[-1, 0]], [obs_vec[-1, 1]], marker='+',
+                color='green', s=200, label='end')
+    plt.scatter([goal[0]], [goal[1]], marker='*',
+                color='green', s=200, label='goal')
+    plt.plot(waypoint_vec[:, 0], waypoint_vec[:, 1], 'y-s', alpha=0.3, label='waypoint')
+    plt.legend(loc='lower left', bbox_to_anchor=(-0.8, -0.15), ncol=4, fontsize=16)
+    plt.show()
+

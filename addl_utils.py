@@ -4,6 +4,8 @@ import math
 import numpy as np
 import random
 import pprint
+from nav2d_helper.envs import env_load_fn
+
 
 def variance_initializer_(tensor, scale=1.0, mode='fan_in', distribution='uniform'):
     
@@ -63,7 +65,9 @@ def from_nested_dict(data):
     else:
         return AttrDict({key: from_nested_dict(data[key])
                             for key in data})
-    
+
+
+ 
 
 class AttrDict(dict):
 
@@ -89,3 +93,6 @@ class AttrDict(dict):
 
     def __str__(self):
         return pprint.pformat(self.__dict__)
+    
+
+

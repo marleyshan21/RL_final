@@ -1,9 +1,10 @@
 from collector import Collector
-from nav2d_helper.envs import set_env_difficulty
+from nav2d_helper.envs import set_env_difficulty, plot_walls
 import numpy as np
 import time
 import matplotlib.pyplot as plt
 import csv
+from visualize import plot_policy_outputs
 
 def rolling_average(data, *, window_size):
     """Smoothen the 1-d data array using a rollin average.
@@ -113,7 +114,7 @@ def eval_pointenv_dists(agent, eval_env, num_evals=10, eval_distances=[2, 5, 10]
         print(f'\t\taverage predicted_dist = {np.mean(pred_dist):.1f} ({np.std(pred_dist):.2f})')
 
 
-def eval_search_policy(search_policy, eval_env, num_evals=10):
+def eval_search_policy(search_policy, eval_env, num_evals=10, difficulty=0.5):
 
     """
     Method to evaluate the search policy on the given environment.
@@ -122,13 +123,25 @@ def eval_search_policy(search_policy, eval_env, num_evals=10):
 
 
     eval_start = time.perf_counter()
-
+    set_env_difficulty(eval_env, difficulty)
     successes = 0.
     for _ in range(num_evals):
         try:
-            _, _, _, ep_reward_list = Collector.get_trajectory(search_policy, eval_env)
+            goal, observations, waypoints, ep_reward_list = Collector.get_trajectory(search_policy, eval_env)
             successes += int(len(ep_reward_list) < eval_env.duration)
+            if len(ep_reward_list) >= eval_env.duration:
+                print('Failed to find the goal.')
+            else:
+                print(f'Found the goal in {len(ep_reward_list)} steps.')
+
+            # plot_policy_outputs(observations=observations, waypoints=waypoints, goal=goal, eval_env=eval_env)
+                
+                
         except:
+            print('Exception occurred during evaluation.')
+            # print the traceback
+            import traceback
+            traceback.print_exc()
             pass
 
     eval_end = time.perf_counter()
