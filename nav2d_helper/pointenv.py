@@ -21,6 +21,8 @@ class PointEnv(gym.Env):
         action_noise: (float) Standard deviation of noise to add to actions. Use 0
             to add no noise.
         """
+
+        self.env_name = walls
         if resize_factor > 1:
             self._walls = envs.resize_walls(envs.WALLS[walls], resize_factor)
         else:

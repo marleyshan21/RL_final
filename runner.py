@@ -2,7 +2,26 @@ from collector import Collector
 from nav2d_helper.envs import set_env_difficulty
 import numpy as np
 import time
+import matplotlib.pyplot as plt
+import csv
 
+def rolling_average(data, *, window_size):
+    """Smoothen the 1-d data array using a rollin average.
+
+    Args:
+        data: 1-d numpy.array
+        window_size: size of the smoothing window
+
+    Returns:
+        smooth_data: a 1-d numpy.array with the same size as data
+    """
+    data= np.array(data)
+    assert data.ndim == 1
+    kernel = np.ones(window_size)
+    smooth_data = np.convolve(data, kernel) / np.convolve(
+        np.ones_like(data), kernel
+    )
+    return smooth_data[: -window_size + 1]
 
 def train_eval(
     policy,
@@ -22,6 +41,8 @@ def train_eval(
 ):
     collector = Collector(policy, replay_buffer, env, initial_collect_steps=initial_collect_steps)
     collector.step(collector.initial_collect_steps)
+    episode_returns = []
+    is_distributional_rl = agent.use_distributional_rl
     for i in range(1, num_iterations + 1):
         collector.step(collect_steps)
         agent.train()
@@ -34,8 +55,36 @@ def train_eval(
             agent.eval()
             print(f'evaluating iteration = {i}')
             eval_func(agent, eval_env)
-            print('-' * 10)
 
+            returns = Collector.eval_agent(agent, eval_env, num_eval_episodes)
+            episode_returns.extend(returns)
+            
+            print('-' * 10)
+    
+    # Write episode returns to a CSV file
+    if is_distributional_rl == True:
+        with open('./data/distributional_rl.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Episode', 'Return'])
+            for episode, ret in enumerate(episode_returns):
+                writer.writerow([episode + 1, ret])
+    else: 
+        with open('./data/no_distributional_rl.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Episode', 'Return'])
+            for episode, ret in enumerate(episode_returns):
+                writer.writerow([episode + 1, ret])
+
+    plt.figure(1)
+    plt.title('DDPG Training Returns vs Episodes')
+    plt.xlabel('Episode')
+    plt.ylabel('Return')
+    plt.plot(episode_returns, color='grey', label='episode returns')
+    plt.plot(rolling_average(episode_returns, window_size=100), 'b', label='rolling average')
+    plt.legend(loc='upper right')
+    print("env:" ,eval_env.env_name)
+    plt.savefig('./rewards/rewardsplot.png')
+    plt.show()
 
 def eval_pointenv_dists(agent, eval_env, num_evals=10, eval_distances=[2, 5, 10]):
 
