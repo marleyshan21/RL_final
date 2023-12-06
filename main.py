@@ -71,7 +71,7 @@ def main(cfg_file, train=False):
                 )
         
         # Save the model
-        torch.save(agent.state_dict(), os.path.join(cfg.ckpt_dir, 'actor.pth'))
+        torch.save(agent.state_dict(), os.path.join(cfg.ckpt_dir + 'agent_' +  cfg.env.env_name + '_' + str(cfg.runner.num_iterations) + '.pth'))
     
     else:
         
