@@ -1,9 +1,9 @@
 dict(
     seed=0,
     env=dict(
-        env_name='random', # Check the "Walls" in envs.py for other options
+        env_name='enclosure', # Check the "Walls" in envs.py for other options
         max_episode_steps=20,
-        resize_factor=2, # Inflate the environment to increase the difficulty.
+        resize_factor=5, # Inflate the environment to increase the difficulty.
     ),
     runner=dict(
         num_iterations=100000,
@@ -23,7 +23,7 @@ dict(
         tau=0.05, # Soft update coefficient for the target networks in the actor-critic algorithm
     ),
     replay_buffer=dict(
-        max_size=1000,
+        max_size=500,
     ),
-    ckpt_dir='./workdirs/uvfddpg_FourRooms/',
+    ckpt_dir='./checkpoints/',
 )

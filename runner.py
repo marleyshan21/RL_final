@@ -4,7 +4,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import csv
-from visualize import plot_policy_outputs
+from visualize import plot_policy_outputs, save_policy_outputs
 
 def rolling_average(data, *, window_size):
     """Smoothen the 1-d data array using a rollin average.
@@ -114,7 +114,7 @@ def eval_pointenv_dists(agent, eval_env, num_evals=10, eval_distances=[2, 5, 10]
         print(f'\t\taverage predicted_dist = {np.mean(pred_dist):.1f} ({np.std(pred_dist):.2f})')
 
 
-def eval_search_policy(search_policy, eval_env, num_evals=10, difficulty=0.5):
+def eval_search_policy(search_policy, eval_env, num_evals=10, difficulty=0.5, policy_name='search_policy'):
 
     """
     Method to evaluate the search policy on the given environment.
@@ -125,26 +125,48 @@ def eval_search_policy(search_policy, eval_env, num_evals=10, difficulty=0.5):
     eval_start = time.perf_counter()
     set_env_difficulty(eval_env, difficulty)
     successes = 0.
-    for _ in range(num_evals):
-        try:
-            goal, observations, waypoints, ep_reward_list = Collector.get_trajectory(search_policy, eval_env)
-            successes += int(len(ep_reward_list) < eval_env.duration)
-            if len(ep_reward_list) >= eval_env.duration:
-                print('Failed to find the goal.')
-            else:
-                print(f'Found the goal in {len(ep_reward_list)} steps.')
 
-            # plot_policy_outputs(observations=observations, waypoints=waypoints, goal=goal, eval_env=eval_env)
-                
-                
-        except:
-            print('Exception occurred during evaluation.')
-            # print the traceback
-            import traceback
-            traceback.print_exc()
-            pass
+    count = 0
+    
 
-    eval_end = time.perf_counter()
-    eval_time = eval_end - eval_start
-    success_rate = successes / num_evals
-    return success_rate, eval_time
+    with open('./results/start_goal_info_' + str(eval_env.env_name) + '_' + str(policy_name) + '.csv', 'a') as g:
+
+        # write an empty line
+        g.write('\n')
+
+        g.write('env_name: ' + eval_env.env_name + '\n')
+        g.write('policy_name: ' + policy_name + '\n')
+        g.write('difficulty: ' + str(difficulty) + '\n')
+        g.write('success start_x, start_y, goal_x, goal_y, policy\n')
+
+        for _ in range(num_evals):
+            try:
+                goal, observations, waypoints, ep_reward_list = Collector.get_trajectory(search_policy, eval_env)
+                successes += int(len(ep_reward_list) < eval_env.duration)
+                count += 1
+                if len(ep_reward_list) >= eval_env.duration:
+                    print('Failed to find the goal.')
+                    g.write('Fail' + ',' + str(observations[0][0]) + ', ' + str(observations[0][1]) + ', ' + str(goal[0]) + ', ' + str(goal[1]) + ', ' + str(policy_name) + '\n')
+
+                else:
+
+                    print(f'Found the goal in {len(ep_reward_list)} steps.')
+                    g.write('Success' + ',' + str(observations[0][0]) + ', ' + str(observations[0][1]) + ', ' + str(goal[0]) + ', ' + str(goal[1]) + ', ' + str(policy_name) + '\n')
+
+                save_policy_outputs(observations=observations, waypoints=waypoints, goal=goal, eval_env=eval_env, count=count, policy_name=policy_name, difficulty=difficulty)
+
+
+                # plot_policy_outputs(observations=observations, waypoints=waypoints, goal=goal, eval_env=eval_env)
+                    
+                    
+            except:
+                print('Exception occurred during evaluation.')
+                # print the traceback
+                import traceback
+                traceback.print_exc()
+                pass
+
+        eval_end = time.perf_counter()
+        eval_time = eval_end - eval_start
+        success_rate = successes / num_evals
+        return success_rate, eval_time

@@ -22,6 +22,7 @@ class Collector:
                 action = self.env.action_space.sample()
             else:
                 action = self.policy.select_action(self.state)
+            # print("action is", action)
 
             next_state, reward, done, info = self.env.step(np.copy(action))
 
@@ -106,6 +107,49 @@ class Collector:
 
         state = eval_env.reset()
         ep_goal = state['goal']
+
+        while True:
+            ep_observation_list.append(state['observation'])
+            action = policy.select_action(state) # NOTE: state['goal'] may be modified
+            # print("action is", action)
+            ep_waypoint_list.append(state['goal'])
+            state, reward, done, info = eval_env.step(np.copy(action))
+
+            ep_reward_list.append(reward)
+            if done:
+                ep_observation_list.append(info['terminal_observation']['observation'])
+                break
+
+        return ep_goal, ep_observation_list, ep_waypoint_list, ep_reward_list
+    
+
+
+    @classmethod
+    def get_trajectory_given(cls, policy, eval_env, start, goal):
+
+        """
+        Method to collect a trajectory from the environment using the policy
+        given a goal and start state.
+        
+        """
+
+
+        ep_observation_list = []
+        ep_waypoint_list = []
+        ep_reward_list = []
+
+        state = eval_env.reset()
+
+        print("originally, state is", state)    
+
+        state['observation'] = np.array(start)
+        state['goal'] = np.array(goal)
+
+        ep_goal = state['goal']
+
+        print("state is", state)
+
+
         while True:
             ep_observation_list.append(state['observation'])
             action = policy.select_action(state) # NOTE: state['goal'] may be modified
